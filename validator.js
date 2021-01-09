@@ -1,39 +1,43 @@
-window.onload = () => {
-  const validateContainer = document.createElement("div");
-  validateContainer.style = "position: absolute; left: 50%; top: 5px";
+const nondescriptClassNames = ["first", "second", "box"];
 
-  const validateHTML = document.createElement("button");
-  validateHTML.innerHTML = "validate";
-  validateHTML.onclick = validate;
-  validateContainer.appendChild(validateHTML);
-
-  document.body.insertBefore(validateContainer, document.body.firstChild);
-};
-
-function validate() {
+async function validate() {
+  await validateHtml();
   validateDescriptiveClassnames();
   validateHasH1();
   validateHasStyleSheet();
   validateDRYCss();
 }
 
-function validateDescriptiveClassnames() {
-  const isDescriptiveClassname = (className) =>
-    className !== "first" && className !== "box" && className !== "second";
+async function validateHtml() {
+  const outerHTML = document.documentElement.outerHTML;
+  const htmlNoScripts = outerHTML.replace(
+    /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/g,
+    ""
+  );
 
-  var allClasses = [];
-  var allElements = document.querySelectorAll("*");
-  for (var i = 0; i < allElements.length; i++) {
-    var classes = allElements[i].className.toString().split(/\s+/);
-    for (var j = 0; j < classes.length; j++) {
-      var cls = classes[j];
-      if (cls && allClasses.indexOf(cls) === -1) {
-        allClasses.push(cls);
-      }
-    }
-  }
+  console.log("*** Start of HTML Validation");
+  const res = await fetch("https://validator.w3.org/nu/?out=text", {
+    method: "POST",
+    body: `<!DOCTYPE html>\n${htmlNoScripts}`,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+  const result = await res.text();
+  console.log(result);
+  console.log("*** End of HTML Validation");
+}
+
+const isDescriptiveClassName = (className) =>
+  !nondescriptClassNames.includes(className);
+
+function validateDescriptiveClassnames() {
+  const allClasses = new Set();
+  const allElements = document.querySelectorAll("*");
+  allElements.forEach((element) => {
+    const classNames = element.className.split(/\s+/);
+    classNames.forEach((className) => allClasses.add(className));
+  });
   allClasses.forEach((className) => {
-    if (!isDescriptiveClassname(className)) {
+    if (!isDescriptiveClassName(className)) {
       console.log(`"${className}" is a non-descriptive class`);
     }
   });
@@ -41,7 +45,6 @@ function validateDescriptiveClassnames() {
 
 function validateHasH1() {
   const h1s = document.querySelectorAll("h1");
-
   if (h1s.length === 0) {
     console.log("Document should have an h1");
   }
@@ -54,24 +57,38 @@ function validateHasStyleSheet() {
 }
 
 function validateDRYCss() {
-  const selectors = [];
-  const rules = [];
-  for (let i = 0; i < document.styleSheets.length; i++) {
-    const sheet = document.styleSheets[i];
-    for (let j = 0; j < sheet.cssRules.length; j++) {
-      const rule = sheet.cssRules[j];
-      const content = rule.cssText.match(/\{(.*)\}/)[1];
-
-      for (let r = 0; r < rules.length; r++) {
-        if (rules[r] === content) {
-          console.log(
-            `Duplicate CSS found, for "${selectors[r]}" and "${rule.selectorText}"`
-          );
-        }
+  const rulesCache = [];
+  for (const sheet of Array.from(document.styleSheets)) {
+    const styleRules = Array.from(sheet.cssRules).filter(
+      (rule) => "selectorText" in rule
+    );
+    for (const rule of styleRules) {
+      const matches = rule.cssText.match(/\{(.*)\}/);
+      if (!matches) {
+        continue;
       }
-
-      selectors.push(rule.selectorText);
-      rules.push(content);
+      const content = matches[1];
+      const duplicate = rulesCache.find((r) => r.content === content);
+      if (duplicate) {
+        console.log(
+          `Duplicate CSS found, for "${duplicate.selectorText}" and "${rule.selectorText}"`
+        );
+      }
+      rulesCache.push({ selectorText: rule.selectorText, content });
     }
   }
 }
+
+window.addEventListener("load", () => {
+  const validateContainer = document.createElement("div");
+  Object.assign(validateContainer.style, {
+    position: "absolute",
+    left: "50%",
+    top: "5px",
+  });
+  const validateHTML = document.createElement("button");
+  validateHTML.innerHTML = "validate";
+  validateHTML.onclick = validate;
+  validateContainer.appendChild(validateHTML);
+  document.body.insertBefore(validateContainer, document.body.firstChild);
+});
