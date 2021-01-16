@@ -2,6 +2,8 @@
 
 Browser extension to validate (simple) webpages. Validating on HTML and CSS syntax errors and code standards.
 
+Main validation code is located in: `source/validate.js`
+
 ## Setup
 
 1. Clone this repo
