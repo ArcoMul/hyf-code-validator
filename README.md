@@ -1,5 +1,7 @@
 # HYF Code Validator
 
+_Opinionated in-browser code validator_
+
 Browser extension to validate (simple) webpages. Validating on HTML and CSS syntax errors and code standards.
 
 Main validation code is located in: `source/validate.js`
