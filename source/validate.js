@@ -1,4 +1,4 @@
-(function () {
+(function() {
 	const nondescriptClassNames = ["first", "second", "box"];
 
 	async function validate() {
@@ -8,14 +8,14 @@
 				...validateDescriptiveClassnames(),
 				...validateHasH1(),
 				...validateHasStyleSheet(),
-				...validateDRYCss(),
-			].filter((i) => !!i);
+				...validateDRYCss()
+			].filter(i => !!i);
 
 			console.log(errors);
 
-			browser.runtime.sendMessage({
+			chrome.runtime.sendMessage({
 				errors: errors,
-				message: "validation-result",
+				message: "validation-result"
 			});
 		} catch (err) {
 			console.log(err);
@@ -32,13 +32,13 @@
 		const res = await fetch("https://validator.w3.org/nu/?out=text", {
 			method: "POST",
 			body: `<!DOCTYPE html>\n${htmlNoScripts}`,
-			headers: { "Content-Type": "text/html; charset=utf-8" },
+			headers: { "Content-Type": "text/html; charset=utf-8" }
 		});
 		const result = await res.text();
 		return [{ message: "HTML validation", errors: [{ message: result }] }];
 	}
 
-	const isNondescriptiveClassName = (className) => {
+	const isNondescriptiveClassName = className => {
 		return nondescriptClassNames.includes(className);
 	};
 
@@ -46,15 +46,15 @@
 		const errors = [];
 		const allClasses = new Set();
 		const allElements = document.querySelectorAll("*");
-		allElements.forEach((element) => {
+		allElements.forEach(element => {
 			console.log("ccc", element.className);
 			if (typeof element.className === "string") {
 				const classNames = element.className.split(/\s+/);
-				classNames.forEach((className) => allClasses.add(className));
+				classNames.forEach(className => allClasses.add(className));
 			}
 		});
-		allClasses.forEach((className) => {
-			console.log('class:', className);
+		allClasses.forEach(className => {
+			console.log("class:", className);
 			if (isNondescriptiveClassName(className)) {
 				errors.push({ message: `"${className}" is a non-descriptive class` });
 			}
@@ -82,11 +82,11 @@
 		const rulesCache = [];
 		for (const sheet of Array.from(document.styleSheets)) {
 			// Let's ignore external stylesheets, as we'd have CORS problems
-			if (new URL(sheet.href).host !== (location.host)) {
+			if (new URL(sheet.href).host !== location.host) {
 				continue;
 			}
 			const styleRules = Array.from(sheet.cssRules).filter(
-				(rule) => "selectorText" in rule
+				rule => "selectorText" in rule
 			);
 			for (const rule of styleRules) {
 				const matches = rule.cssText.match(/\{(.*)\}/);
@@ -94,10 +94,10 @@
 					continue;
 				}
 				const content = matches[1];
-				const duplicate = rulesCache.find((r) => r.content === content);
+				const duplicate = rulesCache.find(r => r.content === content);
 				if (duplicate) {
 					errors.push({
-						message: `Duplicate CSS found, for "${duplicate.selectorText}" and "${rule.selectorText}"`,
+						message: `Duplicate CSS found, for "${duplicate.selectorText}" and "${rule.selectorText}"`
 					});
 				}
 				rulesCache.push({ selectorText: rule.selectorText, content });

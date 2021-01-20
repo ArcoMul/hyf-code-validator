@@ -6,6 +6,8 @@ Browser extension to validate (simple) webpages. Validating on HTML and CSS synt
 
 Main validation code is located in: `source/validate.js`
 
+Based on: https://github.com/notlmn/browser-extension-template
+
 ## Setup
 
 1. Clone this repo

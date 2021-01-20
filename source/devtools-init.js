@@ -1,10 +1,10 @@
-browser.devtools.panels
+chrome.devtools.panels
 	.create(
-		"My Panel", // title
-		"icons/star.png", // icon
+		"HYF Validator", // title
+		"icon.png", // icon
 		"devtools-panel.html" // content
 	)
-	.then((newPanel) => {
+	.then(newPanel => {
 		newPanel.onShown.addListener(initialisePanel);
 		newPanel.onHidden.addListener(unInitialisePanel);
 	});

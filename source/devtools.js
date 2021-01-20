@@ -1,8 +1,9 @@
-browser.runtime.onMessage.addListener(handleMessage);
 
-browser.runtime.sendMessage({
-	tabId: browser.devtools.inspectedWindow.tabId,
-	message: "validate",
+chrome.runtime.onMessage.addListener(handleMessage);
+
+chrome.runtime.sendMessage({
+	tabId: chrome.devtools.inspectedWindow.tabId,
+	message: "validate"
 });
 
 function handleMessage(request, sender, sendResponse) {
@@ -18,7 +19,7 @@ function renderErrors(errors) {
 function renderErrorsUl(errors) {
 	const ul = document.createElement("ul");
 	ul.append(
-		...errors.map((error) => {
+		...errors.map(error => {
 			const li = document.createElement("li");
 			const p = document.createElement("p");
 			p.innerText = error.message;

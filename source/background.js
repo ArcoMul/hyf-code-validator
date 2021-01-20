@@ -4,18 +4,18 @@
 function handleMessage(request, sender, sendResponse) {
 	console.log("handleMessage", request.message);
 	if (request.message === "validate") {
-		browser.tabs
+		chrome.tabs
 			.executeScript(request.tabId, {
-				file: "validate.js",
+				file: "validate.js"
 			})
 			.then(onExecuted, onError)
-			.catch((err) => {
+			.catch(err => {
 				console.log(err);
 			});
 	} else if (request.message === "validation-result") {
-		browser.runtime.sendMessage({
+		chrome.runtime.sendMessage({
 			message: "validation-result",
-			errors: request.errors,
+			errors: request.errors
 		});
 	} else {
 		console.log("unknown message", request);
@@ -30,4 +30,4 @@ function onError() {
 	console.log("executeScript error", arguments);
 }
 
-browser.runtime.onMessage.addListener(handleMessage);
+chrome.runtime.onMessage.addListener(handleMessage);
